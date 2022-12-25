@@ -1,1 +1,2 @@
-# My custom card creations and scripts
+# Raye Cards
+custom cards and scripts that is maded by me :)
