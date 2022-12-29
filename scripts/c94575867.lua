@@ -42,7 +42,6 @@ function s.buffop(e,tp,eg,ep,ev,re,r,rp)
 	local g=Duel.GetMatchingGroup(s.cfilter,tp,0,LOCATION_MZONE,nil)
 	if #g==0 then return end
 	Duel.ChangePosition(g,POS_FACEUP_DEFENSE)
-	local tc=g:GetFirst()
 	for tc in aux.Next(g) do
 		--change def
 		local e1=Effect.CreateEffect(c)

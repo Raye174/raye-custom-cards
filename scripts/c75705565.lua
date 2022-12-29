@@ -21,12 +21,13 @@ end
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local g=eg:Filter(s.egfilter,nil,tp)
+	if #g==0 then return end
 	g:KeepAlive()
 	--timeleap
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O)
-	e2:SetProperty(EFFECT_FLAG_DELAY)
+	e2:SetProperty(EFFECT_FLAG_DELAY+EFFECT_FLAG_CARD_TARGET)
 	e2:SetCode(EVENT_PHASE+PHASE_END)
 	e2:SetRange(LOCATION_SZONE)
 	e2:SetCountLimit(1)
@@ -42,40 +43,37 @@ function s.pgtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.Hint(HINT_OPSELECTED,tp,e:GetDescription())
 	Duel.SetTargetCard(g)
 	Duel.SetChainLimit(s.chlimit)
-	g:Clear()
 end
 function s.chlimit(e,ep,tp)
 	return tp==ep
 end
+function s.presq(c,...)
+	local args={...}
+	local pseq=c:GetPreviousSequence()
+	for _,v in ipairs(args) do
+		if pseq==v then return true end
+	end
+	return false
+end
+function s.chk(tc)
+	local seq=0
+	if s.presq(tc,0) then seq=1+256 end
+	if s.presq(tc,1) then seq=2+512 end
+	if s.presq(tc,2) then seq=4+1024 end
+	if s.presq(tc,3) then seq=8+2048 end
+	if s.presq(tc,4) then seq=10+4096 end
+	return seq
+end
 function s.pgop(e,tp,eg,ep,ev,re,r,rp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOFIELD)
 	local g=Duel.GetChainInfo(0,CHAININFO_TARGET_CARDS)
-	Duel.HintSelection(g)
 	for tc in aux.Next(g) do 
-		--starting from the left is box 1 and goes to the right which is box 5
-		local j=0
-		local szone=tc:IsLocation(LOCATION_SZONE)
-		if tc:GetPreviousSequence()==0 then j=0x1 --box 1
-			if szone then j=0x100 end
-		end
-		if tc:GetPreviousSequence()==1 then j=0x2 --box 2
-			if szone then j=0x200 end
-		end
-		if tc:GetPreviousSequence()==2 then j=0x4 --box 3
-			if szone then j=0x400 end
-		end
-		if tc:GetPreviousSequence()==3 then j=0x8 --box 4
-			if szone then j=0x800 end
-		end
-		if tc:GetPreviousSequence()==4 then j=0x10 --box 5
-			if szone then j=0x1000 end
-		end
-		--check for pendulum
+		--check for extra deck
 		local e1=Effect.CreateEffect(e:GetHandler())
 		e1:SetType(EFFECT_TYPE_FIELD)
 		e1:SetCode(EFFECT_BECOME_LINKED_ZONE)
 		e1:SetValue(0xffffff)
 		Duel.RegisterEffect(e1,tp)
-		Duel.MoveToField(tc,tp,tp,tc:GetPreviousLocation(),tc:GetPreviousPosition(),true,j)
+		Duel.MoveToField(tc,tp,tp,tc:GetPreviousLocation(),tc:GetPreviousPosition(),true,s.chk(tc))
 	end
 end

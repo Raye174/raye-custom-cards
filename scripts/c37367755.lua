@@ -59,5 +59,8 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		local dg=Duel.SelectMatchingCard(tp,Card.IsAbleToDeck,tp,LOCATION_HAND,0,1,1,nil)
 		if #dg==0 then return end
 		Duel.SendtoDeck(dg,nil,SEQ_DECKBOTTOM,REASON_EFFECT)
+	else
+		--if those 3 effect is not exist then false
+		return false
 	end
 end
