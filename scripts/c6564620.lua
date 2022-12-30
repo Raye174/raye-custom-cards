@@ -11,7 +11,7 @@ function s.initial_effect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
 	e1:SetType(EFFECT_TYPE_IGNITION)
 	e1:SetRange(LOCATION_MZONE)
-	e1:SetTarget(s.sptg)
+	--e1:SetTarget(s.sptg)
 	e1:SetOperation(s.spop)
 	c:RegisterEffect(e1)
 	--negate
@@ -28,7 +28,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e2)
 end
 function s.spfilter(c,e,tp)
-	return c:IsCode(16188701) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK)
+	return c:IsCode(25944425) and c:IsCanBeSpecialSummoned(e,0,tp,false,false,POS_FACEUP_ATTACK)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
@@ -62,11 +62,22 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_ONFIELD,nil)
 	if chk==0 then return #g>0 and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) end
 	local filter=0
-	for i=1,16 do
-		filter=filter|i<<16
+	for tc in aux.Next(g) do
+		local cseq=tc:GetSequence()
+		local cloc=tc:GetLocation() 
+		if cseq==0 and cloc==LOCATION_MZONE then
+			filter=filter|0x1
+		end
+		if cseq==1 and cloc==LOCATION_MZONE then
+			filter=filter|0x2 end
+		if cseq==2 and cloc==LOCATION_MZONE then filter=filter|0x4 end
+		if cseq==3 and cloc==LOCATION_MZONE then
+			filter=filter|0x8
+		end
+		if cseq==4 and cloc==LOCATION_MZONE then filter=filter|0x16 end
 	end
 	Duel.Hint(HINT_SELECTMSG,tp,e:GetDescription())
-	local zone=Duel.SelectFieldZone(tp,1,0,LOCATION_ONFIELD,~filter)
+	local zone=Duel.SelectFieldZone(tp,1,0,LOCATION_ONFIELD,~filter<<16)
 	e:SetLabel(zone)
 	Duel.Hint(HINT_ZONE,tp,zone)
 	Duel.Hint(HINT_ZONE,1-tp,zone>>16)
@@ -95,14 +106,15 @@ end
 function s.disop(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local zone=e:GetLabel()
-	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_ONFIELD,nil)
+	local g=Duel.GetMatchingGroup(s.seqfilter,tp,0,LOCATION_ONFIELD,nil,zone,tp)
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TOGRAVE)
 	local tg=Duel.SelectMatchingCard(tp,Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,#g,nil)
-	if #tg==0 then return end
+	if #tg==0 then return true end
 	local ct=Duel.SendtoGrave(tg,REASON_EFFECT)
 	if ct>0 then
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP)
 		local dg=Duel.SelectMatchingCard(tp,s.seqfilter,tp,0,LOCATION_ONFIELD,ct,ct,nil,zone,tp)
+		Duel.HintSelection(dg)
 		for tc in aux.Next(dg) do
 			if tc:IsFaceup() and not tc:IsDisabled() and tc:IsControler(1-tp) then
 				Duel.NegateRelatedChain(tc,RESET_TURN_SET)
@@ -117,6 +129,12 @@ function s.disop(e,tp,eg,ep,ev,re,r,rp)
 				e2:SetValue(RESET_TURN_SET)
 				e2:SetReset(RESET_EVENT+RESETS_STANDARD+RESET_PHASE+PHASE_END)
 				tc:RegisterEffect(e2)
+			end
+			--effect of "Sacred Pearl"
+			if c:IsRelateToEffect(e) and c:IsHasEffect(25944425) then
+				Duel.Hint(HINT_CARD,0,25944425)
+				Duel.Hint(HINT_OPSELECTED,tp,aux.Stringid(25944425,0))
+				Duel.Destroy(tc,REASON_EFFECT)
 			end
 		end
 	end
