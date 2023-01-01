@@ -79,7 +79,6 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local g=Duel.GetMatchingGroup(Card.IsFaceup,tp,0,LOCATION_ONFIELD,nil)
-	if chk==0 then return #g>0 and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) end
 	local filter=0
 	for tc in aux.Next(g) do
 		local cseq=tc:GetSequence()
@@ -95,6 +94,7 @@ function s.distg(e,tp,eg,ep,ev,re,r,rp,chk)
 		end
 		if cseq==4 and cloc==LOCATION_MZONE then filter=filter|0x16 end
 	end
+	if chk==0 then return #g>0 and Duel.IsExistingMatchingCard(Card.IsAbleToGrave,tp,LOCATION_HAND,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,e:GetDescription())
 	local zone=Duel.SelectFieldZone(tp,1,0,LOCATION_ONFIELD,~filter<<16)
 	e:SetLabel(zone)
