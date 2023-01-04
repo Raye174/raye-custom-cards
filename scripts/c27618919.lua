@@ -20,6 +20,7 @@ function s.initial_effect(c)
 	e2:SetCountLimit(1,{id,1})
 end
 s.listed_series={0x90f}
+s.listed_names={id}
 function s.tgfilter(c)
 	return c:IsSetCard(0x90f) and not c:IsCode(id) and c:IsAbleToGrave()
 end

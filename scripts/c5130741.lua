@@ -25,11 +25,11 @@ function s.tdfilter(c)
 	return c:IsSetCard(0x90f) and c:IsAbleToDeck()
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	local clink=aux.CoLinkedGroupCount(g,tp)
+	local clink=Duel.CoLinkedGroupCount(g,tp)
 	local eff1=Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp) and Duel.GetLocationCountFromEx(tp)>0
 	local eff2=Duel.IsExistingMatchingCard(s.tdfilter,tp,LOCATION_REMOVED,0,3,nil)
 	local eff3=Duel.IsExistingMatchingCard(Card.IsAbleToDeck,tp,0,LOCATION_MZONE,1,nil)
-	if chk==0 then return (eff1 and clink>=1 or eff2 and clink>=2 or eff3 and clink>=3) end
+	if chk==0 then return (eff1 and clink>=1) or (eff2 and clink>=2) or (eff3 and clink>=3) end
 	if eff1 then
 		Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_EXTRA)
 	end
@@ -43,7 +43,7 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	end
 end
 function s.activate(e,tp,eg,ep,ev,re,r,rp)
-	local clink=aux.CoLinkedGroupCount(g,tp)
+	local clink=Duel.CoLinkedGroupCount(g,tp)
 	local eff1=Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_EXTRA,0,1,nil,e,tp)
 	local eff2=Duel.IsExistingMatchingCard(s.tdfilter,tp,LOCATION_REMOVED,0,3,nil)
 	local eff3=Duel.IsExistingMatchingCard(Card.IsAbleToDeck,tp,0,LOCATION_MZONE,1,nil)
